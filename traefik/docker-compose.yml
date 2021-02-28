@@ -1,0 +1,67 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:latest"
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --accesslog
+      - --log.level=DEBUG 
+      - --providers.docker=true
+      - --providers.docker.swarmMode=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=traefik-net
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --providers.file.directory=/configuration/
+      - --providers.file.watch=true
+      - --metrics=true
+      - --metrics.influxdb=true
+      - --metrics.influxdb.address=http://influxdb:8086
+      - --metrics.influxdb.protocol=http
+      - --metrics.influxdb.database=traefik
+      - --metrics.influxdb.username=traefik
+      - --metrics.influxdb.password=traefik
+      - --accesslog=true
+      - --accesslog.filepath=.logs
+      - --accesslog.format=json
+      - --accesslog.filters.statuscodes=200,300-302
+      - --accesslog.filters.retryattempts
+      - --accesslog.filters.minduration=10ms
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "9000:9000"
+      - "2053:2053/tcp"
+      #- "3000:3000"
+      #- "8086:8086"
+    networks:
+      - traefik-net
+      - monitoring
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./configuration/traefik.toml:/etc/traefik/traefik.toml
+      - ./logs:/var/log
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+      labels:
+        # Global settings
+        - "traefik.enable=true"
+        - "traefik.http.services.noop.loadbalancer.server.port=8888"
+        # Global redirect to https
+        #- "traefik.http.routers.http-catchall.entrypoints=http"
+        #- "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+        #- "traefik.http.routers.http-catchall.middlewares=https-only"
+        #- "traefik.http.middlewares.https-only.redirectscheme.scheme=https"
+
+networks:
+  traefik-net:
+    external: true
+
+  monitoring:
+    external: true
+

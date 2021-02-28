@@ -1,0 +1,25 @@
+defaultEntryPoints = ["http"]
+
+[entryPoints]
+  [entryPoints.http]
+    address = ":80"
+
+  [entryPoints.https]
+    address = ":443"
+
+[metrics]
+  [metrics.influxDB]
+    address = "influxdb:8086"
+    protocol = "http"
+    database = "traefik"
+    username = "traefik"
+    password = "traefik"
+#    entryPoint = "traefik"
+#    buckets = [0.1,0.3,1.2,5.0]
+
+[api]
+  dashboard = true
+  insecure = true
+
+[providers.docker]
+#  swarmMode = true
