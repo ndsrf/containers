@@ -1,14 +1,14 @@
-version: '3.7'
+version: '3.8'
 services:
   influxdb:
-    image: influxdb
+    image: arm32v7/influxdb
     deploy:
       placement:
         constraints:
           - "node.role==manager"
     volumes:
-      - ./influxdb/data:/var/lib/influxdb
-      - ./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+      - /home/pi/monitor/influxdb/data:/var/lib/influxdb
+      - /home/pi/monitor/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
     networks:
       - traefik-net
       - monitoring
@@ -57,15 +57,26 @@ services:
       - "traefik.docker.network=traefik-net"
 
 
-#  telegraf:
-#    image: telegraf:latest
-#    deploy:
-#      placement:
-#        constraints:
-#          - "node.role==manager"
-#    volumes:
-#      - /home/pi/monitor/telegraf.conf:/etc/telegraf/telegraf.conf:ro
-#      - /var/run/docker.sock:/var/run/docker.sock
+  telegraf:
+    image: telegraf:latest
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        max_replicas_per_node: 1
+    environment:
+      - HOST_ETC=/hostfs/etc
+      - HOST_PROC=/hostfs/proc
+      - HOST_SYS=/hostfs/sys
+      - HOST_VAR=/hostfs/var
+      - HOST_RUN=/hostfs/run
+      - HOST_MOUNT_PREFIX=/hostfs
+    networks:
+      - monitoring
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /:/hostfs:ro
 
 #  prometheus:
 #    image: prom/prometheus:latest
@@ -98,6 +109,28 @@ services:
       # Replace with your Pi-Hole's address including path to API below
       PIHOLE_INSTANCES: "pihole=http://pihole.local/admin/api.php"
 
+
+  speedcheck:
+    image: gonzalo123.check
+    restart: always
+    volumes:
+    - ./speed/src/check:/code/src
+    depends_on:
+    - influxdb
+    build:
+      context: ./speed/src
+      dockerfile: .docker/Dockerfile-check
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+    networks:
+    - monitoring
+    command: /bin/sh start.sh
+    environment:
+      INFLUXDB_HOST: "influxdb"
+      INFLUXDB_PORT: "8086"
+      INFLUXDB_DATABASE: "speedcheck"
 
 networks:
   traefik-net:
