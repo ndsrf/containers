@@ -33,6 +33,18 @@ metrics from other containers, such as the temperature one or the pihole one.
 
 [Website](https://www.influxdata.com)
 
+For each service that needs an influx DB database you need to create a database for it. Portainer > Go to influx db and then to "container console":
+
+```
+root@a9b44934cd4b:/# influx
+Connected to http://localhost:8086 version 1.8.0
+InfluxDB shell version: 1.8.0
+> create database telegrafdb
+> create user telegraf with password 'telegraf'
+> grant write on telegrafdb to telegraf
+> 
+```
+
 ## Pihole
 
 Pihole is an adblock (blocks advertisements) based on DNS. It provides a DNS server that answers 0.0.0.0
@@ -87,6 +99,17 @@ Useful diagram and some ideas on containers: <https://github.com/allthingsclowd/
 
 The Python script I used comes from <https://github.com/adelorenzo/dht22_sensor_python>
 
+This container needs to run in privileged mode to access the GPIO, you can create and run the container with the following:
+
+```
+docker image build --tag ndsrf/templogger -f Dockerfile .
+docker container run --name templogger --privileged --network monitoring2 ndsrf/templogger
+```
+
+I haven't managed to get it working with the monitoring network I used everywhere else - so I created a monitoring2 network just for this one (and influxdb).
+
+This container runs in the pi3 - worker node.
+
 ## Wireguard
 
 A VPN server - so you can connect to your network from anywhere in the world!
@@ -95,3 +118,10 @@ A VPN server - so you can connect to your network from anywhere in the world!
 
 I used this container image <https://hub.docker.com/r/linuxserver/wireguard>, pulling from ghcr.io/linuxserver/wireguard
 
+## Telegraf
+
+Extract details about how the raspberry pi is doing.
+
+## Monitor - speed check
+
+I use this one to monitor my network speed https://github.com/gonzalo123/speed, it requires InfluxDB.
