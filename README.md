@@ -1,9 +1,15 @@
-# containers
-Containers on my raspberry pi.
+# List of useful containers for a Raspberry pi
+Containers on my raspberry pi swarm, a pi4 (master) and pi3 (worker).
+
+List of containers you would end up with: 
+![a sample list of containers as shown in portainer](https://github.com/ndsrf/containers/blob/main/Screenshot%202021-03-01%20095624.png?raw=true "Containers in Portainer")
 
 This assumes a docker swarm with master on 192.168.1.150 and another one (slave) on 192.168.1.151.
 
-It will install the following services:
+The docker swarm: 
+![a sample list of containers as shown in portainer](https://github.com/ndsrf/containers/blob/main/Screenshot%202021-03-01%20095732.png?raw=true "Swarm - only shows services...")
+
+These are the services I have at home:
 
 ## Portainer
 
