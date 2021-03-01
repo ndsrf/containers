@@ -10,7 +10,7 @@ It will install the following services:
 Portainer is container management made easy, a web interface to interact with docker 
 so it is easier to see what is going on.
 
-[Website]: https://www.portainer.io/
+[Website](https://www.portainer.io/)
 
 ## Traefik
 
@@ -18,14 +18,14 @@ This is an inverse proxy. We will have a lot of services, we need a way to tell 
 that http://pihole.local should end up in the pihole container, but http://portainer.local should be redirected to portainer.
 Traefik does that.
 
-[Website]: https://traefik.io/
+[Website](https://traefik.io/)
 
 ## InfluxDB
 
 Influxdb is a time series database designed to handle high write and query loads. We will use it to track
 metrics from other containers, such as the temperature one or the pihole one.
 
-[Website]: https://www.influxdata.com/
+[Website](https://www.influxdata.com)
 
 ## Pihole
 
@@ -34,46 +34,58 @@ for all those DNS queries that would end up on a server serving advertisements o
 blocks ads across all apps, all clients across your network, particularly if you set the raspberry pi as the
 DNS server for DHCP in your router.
 
-[Website]: https://pi-hole.net/
+[Website](https://pi-hole.net)
 
 ## HomeAssistant
 
 Homeassistant is a server to manage all your home appliances and create rules based on "IF ... THEN...",
 for example, turn the lights on when you come in, or turn on the camera alarm when you leave home.
 
-[Website]: https://www.home-assistant.io/
+[Website](https://www.home-assistant.io/)
 
 ## Tor Relay
 
 This is a relay to use part of your bandwidth to contribute to the tor network (as a relay - not an exit
 node).
 
-[Website]: https://www.eff.org/es/pages/what-tor-relay
+[Website](https://www.eff.org/es/pages/what-tor-relay)
 
 ## Tor Proxy
 
 This is a small container to add tor proxy capabilities inside your network. That way if you need to
-use tor sporadically (HTTP/S traffic only) you can just use your raspberry as proxy and that's it.
+use tor sporadically (HTTP/S traffic only) you can just use your raspberry as proxy and that's it. It uses
+polipo as the proxy.
+
+Use the instructions here: <https://github.com/jpaffrath/docker-rpi-torproxy>
 
 ## Grafana
 
 This is a site to create dashboards easily, you can add charts based on metrics. We wil use it to
 display the metrics from InfluxDB.
 
-[Website]: https://grafana.com/
+[Website](https://grafana.com/)
 
 ## Monitor Pihole in Grafana
 
 This is a container to monitor how Pihole is doing in Grafana.
 
+Setup info here: <https://gitlab.com/janw/pi-hole-influx>
+
 ## Monitor Temperature in Grafana
 
 A container to track temperature and humidity - you need a separate sendor for that (a DHT22 sensor).
 
-[This is the sendor I used]: https://www.amazon.es/gp/product/B078SVZB1X/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1
+This is the DHT22 sensor I used: <https://www.amazon.es/gp/product/B078SVZB1X/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1>
+
+Useful diagram and some ideas on containers: <https://github.com/allthingsclowd/docker_rpi3_python_iot_api_dht_11_22>
+
+The Python script I used comes from <https://github.com/adelorenzo/dht22_sensor_python>
 
 ## Wireguard
 
 A VPN server - so you can connect to your network from anywhere in the world!
 
-[Website]: https://www.wireguard.com/
+[Website](https://www.wireguard.com/)
+
+I used this container image <https://hub.docker.com/r/linuxserver/wireguard>, pulling from ghcr.io/linuxserver/wireguard
+
