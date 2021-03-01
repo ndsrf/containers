@@ -1,0 +1,111 @@
+version: '3.7'
+services:
+  influxdb:
+    image: influxdb
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb
+      - ./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+    networks:
+      - traefik-net
+      - monitoring
+      - monitoring2
+    ports:
+      - "8086:8086/tcp"
+
+
+#    labels:
+#      - "traefik.backend=influxdb"
+#      #- "traefik.enable=true"
+#      #- "traefik.frontend.rule=Host:influxdb.local"
+#      #- "traefik.port=8086"
+#      #- "traefik.http.routers.influxdb_http.rule=Host(`influxdb.local`)"
+#      - "traefik.docker.network=traefik-net"
+#      - "traefik.http.routers.influxdb.rule=Host(`influxdb.local`)"
+#      - "traefik.enable=true"
+#      #- "traefik.http.routers.influxdb.entrypoints=http"
+#      - traefik.http.services.influxdb.loadbalancer.server.port=8086
+
+  grafana:
+    image: grafana/grafana
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+    environment:
+      - GF_SERVER_ROOT_URL=https://grafana.local
+      - GF_EXTERNAL_IMAGE_STORAGE=local
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    networks:
+      - traefik-net
+      - monitoring
+    volumes:
+      - /home/pi/monitor/grafana/data:/var/lib/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.entrypoints=http"
+      #- "traefik.http.routers.portainer.tls=true"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.grafana_http.rule=Host(`grafana.local`)"
+      #- "traefik.http.routers.portainer.rule=PathPrefix(`/portainer`)"
+      #- "traefik.http.routers.portainer.middlewares=portainer-stripprefix"
+      #- "traefik.http.middlewares.portainer-stripprefix.stripprefix.prefixes=/portainer"
+      #- "traefik.http.middlewares.portainer-stripprefix.stripprefix.forceslash=true"
+      - "traefik.docker.network=traefik-net"
+
+
+#  telegraf:
+#    image: telegraf:latest
+#    deploy:
+#      placement:
+#        constraints:
+#          - "node.role==manager"
+#    volumes:
+#      - /home/pi/monitor/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+#      - /var/run/docker.sock:/var/run/docker.sock
+
+#  prometheus:
+#    image: prom/prometheus:latest
+#    deploy:
+#      placement:
+#        constraints:
+#          - "node.role==manager"
+#    volumes:
+#      - /home/pi/monitor/prometheus/data:/prometheus
+#      - /home/pi/monitor/prometheus/etc:/etc/prometheus
+
+
+  piholeinflux:
+    image: registry.gitlab.com/janw/pi-hole-influx:armv7
+    networks:
+      - monitoring
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    environment:
+      # Replace details with your InfluxDB's hostname and credentials
+      PIHOLE_INFLUXDB_HOST: "influxdb"
+      PIHOLE_INFLUXDB_PORT: "8086"
+      PIHOLE_INFLUXDB_USERNAME: "pihole"
+      PIHOLE_INFLUXDB_PASSWORD: "pihole"
+      PIHOLE_INFLUXDB_DATABASE: "pihole"
+      # Replace with your Pi-Hole's address including path to API below
+      PIHOLE_INSTANCES: "pihole=http://pihole.local/admin/api.php"
+
+
+networks:
+  traefik-net:
+    external: true
+
+  monitoring:
+    external: true
+
+  monitoring2:
+    external: true
+

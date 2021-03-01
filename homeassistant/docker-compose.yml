@@ -1,0 +1,45 @@
+version: "3"
+services:
+  home-assistant:
+    container_name: home-assistant 
+    networks:
+      - traefik-net
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    image: homeassistant/home-assistant
+    #ports:
+    #  - "2053:2053/tcp"
+    volumes:
+      - .:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    dns:
+     - 192.168.1.1
+     - 1.1.1.1
+    healthcheck:
+      test: "${DOCKER_HEALTHCHECK_TEST:-curl localhost:2053}"
+      interval: "60s"
+      timeout: "3s"
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.home-assistant.entrypoints=http"
+      #- "traefik.http.routers.home-assistant.tls=true"
+      - "traefik.http.services.home-assistant.loadbalancer.server.port=2053"
+      - "traefik.http.routers.home-assistant_http.rule=Host(`YOUR.SERVER.IP.COM`)"
+      #- "traefik.http.routers.home-assistant.rule=PathPrefix(`/portainer`)"
+      #- "traefik.http.routers.home-assistant.middlewares=portainer-stripprefix"
+      #- "traefik.http.middlewares.home-assistant-stripprefix.stripprefix.prefixes=/portainer"
+      #- "traefik.http.middlewares.home-assistant-stripprefix.stripprefix.forceslash=true"
+      - "traefik.docker.network=traefik-net"
+
+networks:
+  traefik-net:
+    external: true
+
